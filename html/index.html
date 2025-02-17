@@ -4,8 +4,16 @@
 		<meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<!-- StAuth10244: I Hope Hemingway, 000912927 certify that this material is my original work. No other person's work has been used without due acknowledgement. I have not made my work available to anyone else -->
-		<title>Geolocation</title>
+		<title>Geolocations</title>
+        <style>
+            #map {
+                height: 600px;
+                width: 900px;
+            }
+        </style>
+        <script src="locations.js"></script>
         <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        
     </head>
 	<body>
         <script>
@@ -14,43 +22,103 @@
 
                 function showPosition(position) {
 
-                    pos.innerHTML = "Latitude: " + position.coords.latitude + 
-                    "<br>Longitude: " + position.coords.longitude
-                    
-                    console.log(position)
+                    const icon_content = document.createElement("img");
+                    icon_content.src = "http://maps.google.com/mapfiles/kml/paddle/blu-blank.png";
+
+                    // create a marker centered at the user's location
+                    let user_location = new google.maps.marker.AdvancedMarkerElement({
+                        map: map,
+                        position: { lat: position.coords.latitude, 
+                                    lng: position.coords.longitude
+                                },
+                        title: "Your Location",  // will appear when we hover over the marker
+                        content: icon_content
+                    });
                 }
 
                 function showError(error) {
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
-                            pos.innerHTML = "Location Permission Denied"
+                            console.log("locations Permission Denied")
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            pos.innerHTML = "Location Information Unavailable."
+                            console.log("locations Information Unavailable.")
                             break;
                         case error.TIMEOUT:
-                            pos.innerHTML = "Request Timed Out"
+                            console.log("Request Timed Out")
                             break;
                         case error.UNKNOWN_ERROR:
-                            pos.innerHTML = "An Unknown Error Occurred."
+                            console.log("An Unknown Error Occurred.")
                             break;
                     
                     }
                 }
 
-                function getLocation() {
-                    if(navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(showPosition, showError)
+                function getlocations() {
+                    if(navigator.geolocations) {
+                        navigator.geolocations.getCurrentPosition(showPosition, showError)
                     } else {
-                        pos.innerHTML = "Geolocation is not supported by this browser."
+                        console.log("Geolocations is not supported by this browser.")
                     }
                 }
 
-                document.getElementById("geolocate").onclick = getLocation
+                document.getElementById("geolocate").onclick = getlocations()
             })
         </script>
-        <button id="geolocate">Geolocate</button><br>
-        <p>Your geolocation is... <br> <span id="whereami"></span></p>
+        <div id="map"></div>
+        <br>
+        <button id="geolocate" >Geolocate</button>
+        <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtGHD4E6-5Fy79PTty_Oc4YYbpqmGryGw&loading=async&callback=initMap&libraries=marker"></script>
+        <script>
+            let map;
+            function initMap(){
+    
+                map = new google.maps.Map(document.getElementById("map"),
+                {
+                    center: {lat: 43.2389, lng: -79.8224},
+                    zoom: 12, 
+                    mapId: "895386cccba8ae60"
+                })
+
+                let infoWindow = new google.maps.InfoWindow();
+
+                let marker_clicked = function() {
+                    infoWindow.close(); 
+                    infoWindow.setContent(this.NAME);
+                    infoWindow.open(map, this);
+                }
+
+                for (i = 0; i < locations.length; i++){
+                    if (locations[i].CATEGORY == "Museum")
+                        new_icon = "http://maps.google.com/mapfiles/kml/paddle/grn-blank.png";
+                    else if (locations[i].CATEGORY == "Restaurant")
+                        new_icon = "http://maps.google.com/mapfiles/kml/paddle/pink-blank.png";
+                    else if (locations[i].CATEGORY == "Movie-Theatre")
+                        new_icon = "http://maps.google.com/mapfiles/kml/paddle/ylw-blank.png";
+                    else 
+                        new_icon = "http://maps.google.com/mapfiles/kml/paddle/blu-blank.png";
+
+                    // create the icon element
+                    const icon_content = document.createElement("img");
+                    icon_content.src = new_icon;
+
+                    new_marker = new google.maps.marker.AdvancedMarkerElement({
+                    map: map,
+                    position: {lat: locations[i].LATITUDE,  
+                               lng: locations[i].LONGITUDE
+                              },
+                    title: locations[i].NAME, 
+                    content: icon_content
+                    });
+                    new_marker.NAME = locations[i].NAME;
+        
+                    new_marker.addListener('click', marker_clicked);
+
+                }
+      
+            }
+        
+        </script>
     </body>
 </html>
   
