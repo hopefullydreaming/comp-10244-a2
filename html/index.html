@@ -26,7 +26,7 @@
             }
 
  
-            .btn-primary{
+            .btn-primary, .btn-info{
                 width:100%;
             }  
 
@@ -39,31 +39,28 @@
         <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtGHD4E6-5Fy79PTty_Oc4YYbpqmGryGw&loading=async&callback=initMap&libraries=marker"></script>
     </head>
 	<body>
-
-        
-
         <div class="container-lg">
             <h1>Things To Do & See With Friends And Family</h1>
+            
             <div id="map"></div>
-        </div>
-        <br>
-        <div class="container-lg">
+            <br>
+
             <div>
-                <button type="button" class="btn btn-primary" id="geolocate" onclick="getlocations()">Geolocate</button>
+                <button type="button" class="btn btn-info btn-lg" id="geolocate" onclick="getlocations()">Geolocate</button>
             </div>
             <br>
             <div class="row row-cols-1 row-cols-sm-4 g-2 g-sm-2">
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="museums" onclick="filterMarkers('Museum')">Museums</button>
+                <div class="col order-sm-2">
+                    <button type="button" class="btn btn-primary btn-sm" id="museums" onclick="filterMarkers('Museum')">Museums</button>
                 </div>
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="movie_theaters" onclick="filterMarkers('Movie-Theatre')">Movie Theaters</button>
+                <div class="col order-sm-3">
+                    <button type="button" class="btn btn-primary btn-sm" id="movie_theaters" onclick="filterMarkers('Movie-Theatre')">Movie Theaters</button>
                 </div>
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="restaurants" onclick="filterMarkers('Restaurant')">Restaurants</button>
+                <div class="col order-sm-4">
+                    <button type="button" class="btn btn-primary btn-sm" id="restaurants" onclick="filterMarkers('Restaurant')">Restaurants</button>
                 </div>
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="display_all" onclick="showAllMarkers()">Display All</button>
+                <div class="col order-sm-1">
+                    <button type="button" class="btn btn-primary btn-sm" id="display_all" onclick="showAllMarkers()">Display All</button>
                 </div>
             </div>
         
@@ -97,7 +94,9 @@
                     </div>
                 </div>
 
-                <button type="button" class="btn btn-primary" onclick="addNewMarker()">Add Location</button>
+                <div class="row row-cols-1 row-cols-sm-4 g-2 g-sm-2 justify-content-sm-end">
+                    <button type="button" class="btn btn-primary" onclick="addNewMarker()">Add Location</button>
+                </div>
             </form>
             <br><br><br>
         </div>
