@@ -48,6 +48,7 @@
                 })
                 
 
+                geocoder = new google.maps.Geocoder();
                 let infoWindow = new google.maps.InfoWindow({
                     content: "",
                 });
@@ -57,7 +58,6 @@
                     if(locationSet)
                         inactive = "";
 
-                    
                     infoWindow.close(); 
                     contentString = `<h3>${this.NAME}</h3>
                                      <p>${this.ADDRESS}</p>
@@ -83,12 +83,12 @@
                     icon_content.src = new_icon;
 
                     new_marker = new google.maps.marker.AdvancedMarkerElement({
-                    map: map,
-                    position: {lat: locations[i].LATITUDE,  
-                            lng: locations[i].LONGITUDE
-                            },
-                    title: locations[i].NAME, 
-                    content: icon_content
+                        map: map,
+                        position: {lat: locations[i].LATITUDE,  
+                                lng: locations[i].LONGITUDE
+                                },
+                        title: locations[i].NAME, 
+                        content: icon_content
                     });
                     new_marker.CATEGORY = locations[i].CATEGORY;
                     new_marker.OBJECTID = locations[i].OBJECTID;
@@ -111,14 +111,13 @@
                 const icon_content = document.createElement("img");
                 icon_content.src = "https://maps.google.com/mapfiles/kml/paddle/red-circle.png";
                 locationSet = true;
+                latlng = { lat: position.coords.latitude, lng: position.coords.longitude }
 
                 // create a marker centered at the user's location
                 let user_location = new google.maps.marker.AdvancedMarkerElement({
                     map: map,
-                    position: { lat: position.coords.latitude, 
-                                lng: position.coords.longitude
-                            },
-                    title: "Your Location",  
+                    position: latlng,
+                    title: "You Are Here",  
                     content: icon_content
                 });
 
@@ -127,8 +126,13 @@
                 user_location.NAME = "You Are Here";
                 user_location.LATITUDE = position.coords.latitude;
                 user_location.LONGITUDE = position.coords.longitude;
-                //user_location.ADDRESS = locations[i].ADDRESS;
-                //markers.push(user_location)
+                geocoder.geocode({location: latlng}, function(results, status) {
+                    if (status == 'OK') {
+                        user_location.ADDRESS = results[0].formatted_address
+                    } else {
+                        alert('Could Not Find Address');
+                    }
+                })
             }
 
             function showError(error) {
@@ -173,6 +177,11 @@
                     markers[i].position = {lat: markers[i].LATITUDE, lng: markers[i].LONGITUDE};
                 }
             }
+
+            function getDirections(){
+
+            }
+
 
         </script>
     </body>
