@@ -32,13 +32,39 @@
         <button type="button" class="btn btn-primary" id="movie_theaters" onclick="filterMarkers('Movie-Theatre')">Movie Theaters</button>
         <button type="button" class="btn btn-primary" id="restaurants" onclick="filterMarkers('Restaurant')">Restaurants</button>
         <button type="button" class="btn btn-primary" id="display_all" onclick="showAllMarkers()">Display All</button>
+        <br>
+        <form>
+            <div class="mb-3">
+                <label for="inputName" class="form-label">Name: </label>
+                <input type="text" class="form-control" id="inputName">
+              </div>
+            <div class="mb-3">
+              <label for="inputAddress" class="form-label">Address: </label>
+              <input type="text" class="form-control" id="inputAddress">
+            </div>
+            <select id="inputCategory" class="form-select" aria-label="Default select example">
+                <option disabled selected hidden value="na"> -- select an option -- </option>
+                <option value="Museum">Museum</option>
+                <option value="Movie-Theatre">Movie-Theatre</option>
+                <option value="Restaurant">Restaurant</option>
+              </select>
+            <button type="button" class="btn btn-primary" onclick="addNewMarker()">Add Location</button>
+        </form>
+
         
         <script>
             let map;
             let locationSet = false;
             let markers = [];
+            let user_location;
+            let infoWindow;
+
+            
 
             function initMap(){
+
+                directionsService = new google.maps.DirectionsService();
+                directionsRenderer = new google.maps.DirectionsRenderer();
         
                 map = new google.maps.Map(document.getElementById("map"),
                 {
@@ -46,25 +72,14 @@
                     zoom: 12, 
                     mapId: "895386cccba8ae60"
                 })
+
+                directionsRenderer.setMap(map);
                 
 
                 geocoder = new google.maps.Geocoder();
-                let infoWindow = new google.maps.InfoWindow({
+                infoWindow = new google.maps.InfoWindow({
                     content: "",
                 });
-
-                let marker_clicked = function() {
-                    let inactive = " disabled"
-                    if(locationSet)
-                        inactive = "";
-
-                    infoWindow.close(); 
-                    contentString = `<h3>${this.NAME}</h3>
-                                     <p>${this.ADDRESS}</p>
-                                     <button type="button" class="btn btn-primary" id="directions" ${inactive}>Get Directions</button>`
-                    infoWindow.setContent(contentString);
-                    infoWindow.open(map, this);
-                }
 
                 for (i = 0; i < locations.length; i++){
 
@@ -106,6 +121,19 @@
     
             }
 
+            let marker_clicked = function() {
+                    let inactive = " disabled"
+                    if(locationSet)
+                        inactive = "";
+
+                    infoWindow.close(); 
+                    contentString = `<h4>${this.NAME}</h4>
+                                     <p>${this.ADDRESS}</p>
+                                     <button type="button" class="btn btn-primary" id="directions" onclick="getDirections('${this.ADDRESS}')" ${inactive}>Get Directions</button>`
+                    infoWindow.setContent(contentString);
+                    infoWindow.open(map, this);
+                }
+
             function showPosition(position) {
 
                 const icon_content = document.createElement("img");
@@ -114,7 +142,7 @@
                 latlng = { lat: position.coords.latitude, lng: position.coords.longitude }
 
                 // create a marker centered at the user's location
-                let user_location = new google.maps.marker.AdvancedMarkerElement({
+                user_location = new google.maps.marker.AdvancedMarkerElement({
                     map: map,
                     position: latlng,
                     title: "You Are Here",  
@@ -178,10 +206,90 @@
                 }
             }
 
-            function getDirections(){
+            function getDirections(destinationAddress){
 
+                request = {
+                    origin: user_location.ADDRESS,
+                    destination: destinationAddress,
+                    travelMode: 'DRIVING'
+                };
+
+                directionsService.route(request, function(result, status) {
+                    if (status == 'OK') {
+                    directionsRenderer.setDirections(result);
+                    }
+                });
             }
 
+            function addNewMarker(){
+                let inputValid = true;
+                let new_address = document.getElementById("inputAddress").value;
+                let new_category = document.getElementById("inputCategory").value;
+                let new_name = document.getElementById("inputName").value;
+                let new_lat, new_lng, new_latlng;
+            
+
+                if (new_category == "Museum"){
+                    new_icon = "https://maps.google.com/mapfiles/kml/paddle/purple-square-lv.png";}
+                else if (new_category == "Restaurant"){
+                    new_icon = "https://maps.google.com/mapfiles/kml/paddle/wht-circle-lv.png";}
+                else if (new_category == "Movie-Theatre"){
+                    new_icon = "https://maps.google.com/mapfiles/kml/paddle/ylw-diamond-lv.png";}
+                else {
+                    alert("please choose a category");
+                    inputValid = false;
+                }
+                
+                if(inputValid){
+                    geocoder.geocode( { 'address': new_address}, function(results, status) {
+                        if (status == 'OK') {
+                        
+                            new_lat = results[0].geometry.location.lat();
+                            new_lng = results[0].geometry.location.lng();
+
+                            new_latlng = {lat: new_lat, lng: new_lng};
+
+                            const icon_content = document.createElement("img");
+                            icon_content.src = new_icon;
+
+                            new_marker = new google.maps.marker.AdvancedMarkerElement({
+                                map: map,
+                                position: new_latlng,
+                                title: new_name, 
+                                content: icon_content
+                            });
+                            new_marker.CATEGORY = new_category;
+                            new_marker.OBJECTID = markers.length;
+                            new_marker.NAME = new_name;
+                            
+                            new_marker.LATITUDE = new_lat;
+                            new_marker.LONGITUDE = new_lng;
+
+                            geocoder.geocode({location: new_latlng}, function(results, status) {
+                                if (status == 'OK') {
+                                    new_marker.ADDRESS = results[0].formatted_address
+                                } else {
+                                    new_marker.ADDRESS = new_address;
+                                }
+                            })
+
+                
+                            new_marker.addListener('click', marker_clicked);
+
+                            markers.push(new_marker);
+
+                            document.getElementById("inputAddress").value = "";
+                            document.getElementById("inputCategory").value = "na";
+                            document.getElementById("inputName").value = "";
+                            
+                        } else {
+                            alert('address not found');
+                        }
+                    });
+
+                }
+
+            }
 
         </script>
     </body>
